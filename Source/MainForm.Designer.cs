@@ -1,4 +1,4 @@
-﻿namespace eft_dma_radar
+﻿﻿namespace eft_dma_radar
 {
     partial class frmMain
     {
@@ -214,6 +214,7 @@
             mcRadarMapSetup = new MaterialSkin.Controls.MaterialCard();
             lblRadarMapSetup = new MaterialSkin.Controls.MaterialLabel();
             skMapCanvas = new SkiaSharp.Views.Desktop.SKGLControl();
+            skAimCanvas = new SkiaSharp.Views.Desktop.SKGLControl();
             tabSettings = new TabPage();
             tabSelector = new MaterialSkin.Controls.MaterialTabSelector();
             tabControlSettings = new MaterialSkin.Controls.MaterialTabControl();
@@ -3450,6 +3451,7 @@
             tabRadar.Controls.Add(mcRadarSettings);
             tabRadar.Controls.Add(mcRadarMapSetup);
             tabRadar.Controls.Add(skMapCanvas);
+            tabRadar.Controls.Add(skAimCanvas);
             tabRadar.ImageKey = "radar.png";
             tabRadar.Location = new Point(4, 39);
             tabRadar.Name = "tabRadar";
@@ -3829,7 +3831,7 @@
             mcRadarSettings.Controls.Add(btnToggleMapFree);
             mcRadarSettings.Depth = 0;
             mcRadarSettings.ForeColor = Color.FromArgb(222, 0, 0, 0);
-            mcRadarSettings.Location = new Point(1171, 5);
+            mcRadarSettings.Location = new Point(1171, 305);
             mcRadarSettings.Margin = new Padding(14);
             mcRadarSettings.MouseState = MaterialSkin.MouseState.HOVER;
             mcRadarSettings.Name = "mcRadarSettings";
@@ -3873,18 +3875,30 @@
             // 
             // skMapCanvas
             // 
+            skMapCanvas.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             skMapCanvas.BackColor = Color.Black;
-            skMapCanvas.Dock = DockStyle.Fill;
-            skMapCanvas.Location = new Point(3, 3);
+            skMapCanvas.Location = new Point(1039, 3);
             skMapCanvas.Margin = new Padding(4, 3, 4, 3);
             skMapCanvas.Name = "skMapCanvas";
-            skMapCanvas.Size = new Size(1336, 697);
+            skMapCanvas.Size = new Size(300, 300);
             skMapCanvas.TabIndex = 13;
             skMapCanvas.VSync = true;
             skMapCanvas.PaintSurface += skMapCanvas_PaintSurface;
             skMapCanvas.MouseDown += skMapCanvas_MouseDown;
             skMapCanvas.MouseMove += skMapCanvas_MouseMovePlayer;
             skMapCanvas.MouseUp += skMapCanvas_MouseUp;
+            // 
+            // skAimCanvas
+            // 
+            skAimCanvas.BackColor = Color.Black;
+            skAimCanvas.Dock = DockStyle.Fill;
+            skAimCanvas.Location = new Point(3, 3);
+            skAimCanvas.Margin = new Padding(4, 3, 4, 3);
+            skAimCanvas.Name = "skAimCanvas";
+            skAimCanvas.Size = new Size(1336, 697);
+            skAimCanvas.TabIndex = 51;
+            skAimCanvas.VSync = true;
+            skAimCanvas.PaintSurface += skAimCanvas_PaintSurface;
             // 
             // tabSettings
             // 
@@ -6793,6 +6807,7 @@
         private MaterialSkin.Controls.MaterialSwitch swAutoTaskRefresh;
         private MaterialSkin.Controls.MaterialSwitch swQuestLootItems;
         private MaterialSkin.Controls.MaterialButton btnRefreshTasks;
+        private SkiaSharp.Views.Desktop.SKGLControl skAimCanvas;
     }
 }
 

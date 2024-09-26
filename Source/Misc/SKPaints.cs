@@ -129,6 +129,16 @@ namespace eft_dma_radar
             Typeface = SKTypeface.FromFamilyName("Arial", SKFontStyle.Bold),
             TextAlign = SKTextAlign.Center
         };
+        public static readonly SKPaint TextAimViewDistance = new SKPaint()
+        {
+            Color = SKColors.White,
+            IsStroke = false,
+            TextSize = 9,
+            TextEncoding = SKTextEncoding.Utf8,
+            IsAntialias = true,
+            Typeface = SKTypeface.FromFamilyName("Arial", SKFontStyle.Normal),
+            TextAlign = SKTextAlign.Center
+        };
         public static readonly SKPaint PaintGrenades = new SKPaint()
         {
             Color = SKColors.OrangeRed,

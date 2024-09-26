@@ -16,6 +16,7 @@ namespace eft_dma_radar
         private readonly LootFilterManager _lootFilterManager;
         private readonly AIFactionManager _aiFactions;
         private readonly SKGLControl _mapCanvas;
+        private readonly SKGLControl _aimCanvas;
         private readonly Stopwatch _fpsWatch = new();
         private readonly object _renderLock = new();
         private readonly object _loadMapBitmapsLock = new();
@@ -184,6 +185,8 @@ namespace eft_dma_radar
 
             _mapCanvas = skMapCanvas;
             _mapCanvas.VSync = _config.VSync;
+            _aimCanvas = skAimCanvas;
+            _aimCanvas.VSync = _config.VSync;
 
             _mapChangeTimer.AutoReset = false;
             _mapChangeTimer.Elapsed += MapChangeTimer_Elapsed;
@@ -652,6 +655,7 @@ namespace eft_dma_radar
             {
                 await Task.Run(() => Thread.SpinWait(50000)); // High performance async delay
                 _mapCanvas.Refresh(); // draw next frame
+                _aimCanvas.Refresh(); // draw next frame
             }
         }
 
@@ -1132,10 +1136,10 @@ namespace eft_dma_radar
 
             var mapCanvasBounds = new SKRect() // Drawing Destination
             {
-                Left = _mapCanvas.Left,
-                Right = _mapCanvas.Right,
-                Top = _mapCanvas.Top,
-                Bottom = _mapCanvas.Bottom
+                Left = 0,
+                Right = _mapCanvas.Width,
+                Top = 0,
+                Bottom = _mapCanvas.Height
             };
 
             // Draw Game Map
@@ -1201,13 +1205,13 @@ namespace eft_dma_radar
                         }
 
                         // Draw Player
-                        DrawPlayer(canvas, player, playerZoomedPos, aimlineLength, mouseOverGroup, localPlayerMapPos);
+                        DrawRadarPlayer(canvas, player, playerZoomedPos, aimlineLength, mouseOverGroup, localPlayerMapPos);
                     }
                 }
             }
         }
 
-        private void DrawPlayer(SKCanvas canvas, Player player, MapPosition playerZoomedPos, int aimlineLength, int? mouseOverGrp, MapPosition localPlayerMapPos)
+        private void DrawRadarPlayer(SKCanvas canvas, Player player, MapPosition playerZoomedPos, int aimlineLength, int? mouseOverGrp, MapPosition localPlayerMapPos)
         {
             if (this.InGame && this.LocalPlayer is not null)
             {
@@ -1556,16 +1560,12 @@ namespace eft_dma_radar
 
                 if (aimviewPlayers is not null)
                 {
-                    var isItemListVisible = lstLootItems.Visible;
-                    var localPlayerAimviewBoundsX = mcRadarLootItemViewer.Location.X;
-                    var localPlayerAimviewBoundsY = mcRadarLootItemViewer.Location.Y - _aimviewWindowSize - 5;
-
                     var localPlayerAimviewBounds = new SKRect()
                     {
-                        Left = (isItemListVisible ? localPlayerAimviewBoundsX : _mapCanvas.Left),
-                        Right = (isItemListVisible ? localPlayerAimviewBoundsX : _mapCanvas.Left) + _aimviewWindowSize,
-                        Bottom = (isItemListVisible ? localPlayerAimviewBoundsY + _aimviewWindowSize : _mapCanvas.Bottom),
-                        Top = (isItemListVisible ? localPlayerAimviewBoundsY : _mapCanvas.Bottom - _aimviewWindowSize)
+                        Left = _aimCanvas.Left + _aimCanvas.Width / 2 - _aimviewWindowSize / 2 - 33,
+                        Right = _aimCanvas.Left + _aimCanvas.Width / 2 + _aimviewWindowSize / 2 - 33,
+                        Top = _aimCanvas.Top + _aimCanvas.Height / 2 - _aimviewWindowSize / 2 - 10,
+                        Bottom = _aimCanvas.Top + _aimCanvas.Height / 2 + _aimviewWindowSize / 2 - 10
                     };
 
                     var isRadarStatsVisible = mcRadarStats.Visible || mcRadarEnemyStats.Visible;
@@ -1574,10 +1574,10 @@ namespace eft_dma_radar
 
                     var primaryTeammateAimviewBounds = new SKRect()
                     {
-                        Left = (isRadarStatsVisible ? primaryTeammateAimviewBoundsX : _mapCanvas.Right - _aimviewWindowSize),
-                        Right = (isRadarStatsVisible ? primaryTeammateAimviewBoundsX + _aimviewWindowSize : _mapCanvas.Right),
-                        Bottom = (isRadarStatsVisible ? primaryTeammateAimviewBoundsY + _aimviewWindowSize : _mapCanvas.Bottom),
-                        Top = (isRadarStatsVisible ? primaryTeammateAimviewBoundsY : _mapCanvas.Bottom - _aimviewWindowSize)
+                        Left = (isRadarStatsVisible ? primaryTeammateAimviewBoundsX : _aimCanvas.Right - _aimviewWindowSize),
+                        Right = (isRadarStatsVisible ? primaryTeammateAimviewBoundsX + _aimviewWindowSize : _aimCanvas.Right),
+                        Bottom = (isRadarStatsVisible ? primaryTeammateAimviewBoundsY + _aimviewWindowSize : _aimCanvas.Bottom),
+                        Top = (isRadarStatsVisible ? primaryTeammateAimviewBoundsY : _aimCanvas.Bottom - _aimviewWindowSize)
                     };
 
                     var primaryTeammate = this.AllPlayers?
@@ -1704,6 +1704,13 @@ namespace eft_dma_radar
             var pitch = CalculatePitch(myRotation.Y);
 
             DrawCrosshair(canvas, drawingLocation);
+            float playerYaw = myRotation.X;
+            float playerPitch = myRotation.Y;
+            if (playerPitch < 0)
+            {
+                playerPitch += 360.0f;
+            }
+            canvas.DrawText(playerYaw.ToString("0") + ":" + playerPitch.ToString("0"), 100, 100, SKPaints.TextRadarStatus);
 
             if (aimviewPlayers is not null)
             {
@@ -1713,7 +1720,7 @@ namespace eft_dma_radar
                         continue; // don't draw self
 
                     if (ShouldDrawPlayer(myPosition, player.Position, _config.MaxDistance))
-                        DrawPlayer(canvas, drawingLocation, myPosition, player, normalizedDirection, pitch);
+                        DrawAimViewPlayer(canvas, drawingLocation, myPosition, player, myRotation);
                 }
             }
 
@@ -1822,44 +1829,163 @@ namespace eft_dma_radar
         private void DrawCrosshair(SKCanvas canvas, SKRect drawingLocation)
         {
             canvas.DrawLine(
-                drawingLocation.Left,
-                drawingLocation.Bottom - (_aimviewWindowSize / 2),
-                drawingLocation.Right,
-                drawingLocation.Bottom - (_aimviewWindowSize / 2),
+                drawingLocation.Left + (drawingLocation.Width / 2) - (_aimviewWindowSize / 2),
+                drawingLocation.Top + (drawingLocation.Height / 2),
+                drawingLocation.Left + (drawingLocation.Width / 2) + (_aimviewWindowSize / 2),
+                drawingLocation.Top + (drawingLocation.Height / 2),
                 SKPaints.PaintAimviewCrosshair
             );
 
             canvas.DrawLine(
-                drawingLocation.Right - (_aimviewWindowSize / 2),
-                drawingLocation.Top,
-                drawingLocation.Right - (_aimviewWindowSize / 2),
-                drawingLocation.Bottom,
+                drawingLocation.Left + (drawingLocation.Width / 2),
+                drawingLocation.Top + (drawingLocation.Height / 2) - (_aimviewWindowSize / 2),
+                drawingLocation.Left + (drawingLocation.Width / 2),
+                drawingLocation.Top + (drawingLocation.Height / 2) + (_aimviewWindowSize / 2),
                 SKPaints.PaintAimviewCrosshair
             );
         }
 
-        private void DrawPlayer(SKCanvas canvas, SKRect drawingLocation, Vector3 myPosition, Player player, float normalizedDirection, float pitch)
+        private void DrawAimViewPlayer(SKCanvas canvas, SKRect drawingLocation, Vector3 myPosition, Player player, Vector2 myRotation)
         {
-            var playerPos = player.Position;
-            float dist = Vector3.Distance(myPosition, playerPos);
-            float heightDiff = playerPos.Z - myPosition.Z;
-            float angleY = CalculateAngleY(heightDiff, dist, pitch);
+            Vector3 playerPosition = player.Position;
+
+            float dist = Vector3.Distance(myPosition, playerPosition);
+            float heightDiff = playerPosition.Z - myPosition.Z;
+            float angleY = CalculateAngleY(heightDiff, dist, -myRotation.Y);
             float y = CalculateYPosition(angleY, _aimviewWindowSize);
 
-            float opposite = playerPos.Y - myPosition.Y;
-            float adjacent = playerPos.X - myPosition.X;
-            float angleX = CalculateAngleX(opposite, adjacent, normalizedDirection);
+            float opposite = playerPosition.Y - myPosition.Y;
+            float adjacent = playerPosition.X - myPosition.X;
+            float angleX = CalculateAngleX(opposite, adjacent, NormalizeDirection(myRotation.X));
             float x = CalculateXPosition(angleX, _aimviewWindowSize);
 
-            float drawX = drawingLocation.Right - x;
-            float drawY = drawingLocation.Bottom - y;
+            Vector2 canvasPosition = new Vector2(drawingLocation.Right - x, drawingLocation.Bottom - y);
 
-            if (IsInFOV(drawX, drawY, drawingLocation))
+            // Vector3 selfPosition = new Vector3(myPosition.X, myPosition.Z, myPosition.Y);
+            // float playerYaw = myRotation.X;
+            // float playerPitch = myRotation.Y;
+            // if (playerPitch < 0)
+            // {
+            //     playerPitch += 360.0f;
+            // }
+            // Vector3 enemyPosition = new Vector3(playerPosition.X, playerPosition.Z, playerPosition.Y);
+            // Vector3 enemyViewportPos = WorldToViewportPointCustom(selfPosition, playerYaw, playerPitch, enemyPosition);
+            // float enemyCanvasX = enemyViewportPos.X;
+            // float enemyCanvasY = enemyViewportPos.Y;
+            // string enemyQuadrant = DetermineQuadrant(enemyViewportPos);
+
+            float drawX = canvasPosition.X;
+            float drawY = canvasPosition.Y;
+
+            if (IsInFOV(drawX, drawY, drawingLocation) && dist < 250)
             {
                 float circleSize = CalculateCircleSize(dist);
-                canvas.DrawCircle(drawX, drawY, circleSize * _uiScale, player.GetAimviewPaint());
+                float boxWidth = circleSize * _uiScale * 3;
+                float boxHeight = circleSize * _uiScale * 7;
+                //canvas.DrawCircle(enemyCanvasX, enemyCanvasY, circleSize * _uiScale * 5.0f, player.GetAimviewPaint());
+                //canvas.DrawText("(" + enemyPosition.X.ToString("0") + ":" + enemyPosition.Z.ToString("0") + ")(" + enemyCanvasX.ToString("0") + ":" + enemyCanvasY.ToString("0") + ")" + dist.ToString("0") + enemyQuadrant, drawX, drawY - 20, SKPaints.TextAimViewDistance);
+                canvas.DrawRect(drawX - boxWidth / 2, drawY, boxWidth, boxHeight, player.GetAimviewPaint());
+                // canvas.DrawCircle(drawX, drawY, circleSize * _uiScale, player.GetAimviewPaint());
+                if (dist > 20) {
+                    canvas.DrawText(dist.ToString("0") + "m(" + heightDiff.ToString("0") + ")", drawX, drawY - 10, SKPaints.TextAimViewDistance);
+                } else {
+                    canvas.DrawText(dist.ToString("F1") + "m(" + heightDiff.ToString("0") + ")", drawX, drawY - 10, SKPaints.TextAimViewDistance);
+                }
             }
         }
+
+        #region AimView
+        const float Deg2Rad = (float)Math.PI / 180.0f;
+
+        // Determine which quadrant the enemy is in based on viewport coordinates
+        private string DetermineQuadrant(Vector3 viewportPos)
+        {
+            if (viewportPos.X < 0 && viewportPos.Y >= 0)
+            {
+                return "Top-left";
+            }
+            else if (viewportPos.X >= 0 && viewportPos.Y >= 0)
+            {
+                return "Top-right";
+            }
+            else if (viewportPos.X < 0 && viewportPos.Y < 0)
+            {
+                return "Bottom-left";
+            }
+            else
+            {
+                return "Bottom-right";
+            }
+        }
+
+        private Matrix4x4 CalculateProjectionMatrix(float fovY, float aspect, float near, float far)
+        {
+            float tanHalfFovY = (float)Math.Tan(0.5f * Deg2Rad * fovY);
+
+            Matrix4x4 projectionMatrix = new Matrix4x4();
+            projectionMatrix[0, 0] = 1.0f / (aspect * tanHalfFovY);
+            projectionMatrix[1, 1] = 1.0f / tanHalfFovY;
+            projectionMatrix[2, 2] = -(far + near) / (far - near);
+            projectionMatrix[2, 3] = -(2.0f * far * near) / (far - near);
+            projectionMatrix[3, 2] = -1.0f;
+            projectionMatrix[3, 3] = 0.0f;
+
+            return projectionMatrix;
+        }
+
+        // Custom implementation of WorldToViewportPoint
+        private Vector3 WorldToViewportPointCustom(Vector3 cameraPosition, float cameraYaw, float cameraPitch, Vector3 worldPos)
+        {
+            // Translate the world position to camera space
+            Vector3 translatedPos = worldPos - cameraPosition;
+
+            // Create rotation matrices for yaw and pitch
+            float yawRad = Deg2Rad * cameraYaw;
+            float pitchRad = Deg2Rad * cameraPitch;
+
+            // Yaw rotation (around Y-axis)
+            Vector3 yawedPos = new Vector3(
+                translatedPos.X * (float)Math.Cos(yawRad) - translatedPos.Z * (float)Math.Sin(yawRad),
+                -translatedPos.Y,
+                translatedPos.X * (float)Math.Sin(yawRad) + translatedPos.Z * (float)Math.Cos(yawRad)
+            );
+
+            // Pitch rotation (around X-axis)
+            Vector3 pitchedPos = new Vector3(
+                yawedPos.X,
+                yawedPos.Y * (float)Math.Cos(pitchRad) - yawedPos.Z * (float)Math.Sin(pitchRad),
+                yawedPos.Y * (float)Math.Sin(pitchRad) + yawedPos.Z * (float)Math.Cos(pitchRad)
+            );
+
+            // Calculate the projection matrix
+            float fov = 65.0f; // Field of view (vertical)
+            float aspect = _aimCanvas.Width / _aimCanvas.Height; // Aspect ratio (width/height)
+            float near = 0.1f; // Near clipping plane
+            float far = 1000.0f; // Far clipping plane
+            Matrix4x4 projectionMatrix = CalculateProjectionMatrix(fov, aspect, near, far);
+
+            // Apply the projection matrix
+            // Vector4 clipSpacePos = cam.projectionMatrix * new Vector4(pitchedPos.x, pitchedPos.y, pitchedPos.z, 1.0f);
+            Vector4 clipSpacePos = Vector4.Transform(new Vector4(pitchedPos.X, pitchedPos.Y, pitchedPos.Z, 1.0f), projectionMatrix);
+
+            // Perform the perspective divide
+            if (clipSpacePos.W != 0.0f)
+            {
+                clipSpacePos.X /= clipSpacePos.W;
+                clipSpacePos.Y /= clipSpacePos.W;
+                clipSpacePos.Z /= clipSpacePos.W;
+            }
+
+            // Convert NDC to viewport coordinates
+            Vector3 viewportPos = new Vector3(
+                clipSpacePos.X * 0.5f,
+                clipSpacePos.Y * 0.5f,
+                clipSpacePos.Z
+            );
+
+            return viewportPos;
+        }
+        #endregion
 
         private SKPoint GetScreenPosition(SKCanvas canvas, SKRect drawingLocation, Vector3 myPosition, Vector3 bonePosition, float normalizedDirection, float pitch)
         {
@@ -2366,18 +2492,48 @@ namespace eft_dma_radar
 
                         DrawPlayers(canvas);
 
-                        if (_config.Aimview)
-                            DrawAimview(canvas);
-
                         DrawToolTips(canvas);
                     }
                 }
                 else
-                    DrawStatusText(canvas);
-
-                canvas.Flush();
+                {
+                    lock (_renderLock)
+                    {
+                        DrawStatusText(canvas);
+                    }
+                }
+                if (canvas != null)
+                {
+                    // Flush the canvas drawing
+                    canvas.Flush();
+                }
             }
             catch { }
+        }
+
+        private void skAimCanvas_PaintSurface(object sender, SKPaintGLSurfaceEventArgs e)
+        {
+            try
+            {
+                SKCanvas canvas = e.Surface.Canvas;
+                canvas.Clear();
+
+                if (IsReadyToRender())
+                {
+                    lock (_renderLock)
+                    {
+                        if (_config.Aimview)
+                            DrawAimview(canvas);
+                    }
+                }
+
+                if (canvas != null)
+                {
+                    // Flush the canvas drawing
+                    canvas.Flush();
+                }
+            }
+            catch {}
         }
 
         private void btnToggleMap_Click(object sender, EventArgs e)
@@ -2671,6 +2827,8 @@ namespace eft_dma_radar
 
             if (_mapCanvas is not null)
                 _mapCanvas.VSync = enabled;
+            if (_aimCanvas is not null)
+                _aimCanvas.VSync = enabled;
         }
 
         private void swPvEMode_CheckedChanged(object sender, EventArgs e)
@@ -3136,7 +3294,7 @@ namespace eft_dma_radar
         private void swMasterSwitch_CheckedChanged(object sender, EventArgs e)
         {
             bool isChecked = swMasterSwitch.Checked;
-            _config.MasterSwitch = isChecked;
+            // _config.MasterSwitch = isChecked; disable write
 
             mcSettingsMemoryWritingGlobal.Enabled = isChecked;
             mcSettingsMemoryWritingGear.Enabled = isChecked;
