@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31912.275
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "eft-dma-radar", "eft-dma-radar.csproj", "{56E6577A-CAF7-402F-8590-5B6DEE34F918}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "interactive-map-viewer", "interactive-map-viewer.csproj", "{56E6577A-CAF7-402F-8590-5B6DEE34F918}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
