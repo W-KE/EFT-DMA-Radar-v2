@@ -529,10 +529,16 @@ namespace eft_dma_radar
                     var inFaction = Program.AIFactionManager.IsInFaction(this.Name, out var playerType);
 
                     if (!inFaction && Memory.IsPvEMode)
-                        if (!this.Name.Contains(" "))
-                            playerType = PlayerType.BEAR;
+                    {
                         if (this.Gear.ContainsKey("Dogtag"))
+                        {
                             playerType = (this.Gear["Dogtag"].Short == "BEAR" ? PlayerType.BEAR : PlayerType.USEC);
+                        }
+                        if (playerType == PlayerType.Scav && !this.Name.Contains(" "))
+                        {
+                            playerType = PlayerType.Raider;
+                        }
+                    }
 
                     return playerType;
                 }
@@ -560,10 +566,16 @@ namespace eft_dma_radar
                     var inFaction = Program.AIFactionManager.IsInFaction(this.Name, out var playerType);
 
                     if (!inFaction && Memory.IsPvEMode)
-                        if (!this.Name.Contains(" "))
-                            playerType = PlayerType.BEAR;
+                    {
                         if (this.Gear.ContainsKey("Dogtag"))
+                        {
                             playerType = (this.Gear["Dogtag"].Short == "BEAR" ? PlayerType.BEAR : PlayerType.USEC);
+                        }
+                        if (playerType == PlayerType.Scav && !this.Name.Contains(" "))
+                        {
+                            playerType = PlayerType.Raider;
+                        }
+                    }
 
                     return playerType;
                 }
