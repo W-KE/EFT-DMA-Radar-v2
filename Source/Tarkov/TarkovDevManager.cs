@@ -68,7 +68,7 @@ namespace eft_dma_radar
                 var body = new
                 {
                     query = @"query {
-                                    items {
+                                    items(gameMode:pve) {
                                         id
                                         name
                                         shortName
