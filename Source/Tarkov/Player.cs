@@ -524,6 +524,18 @@ namespace eft_dma_radar
                 {
                     return PlayerType.Boss;
                 }
+                else if (this.Name.Contains(" Zavodskoy"))
+                {
+                    return PlayerType.BossFollower;
+                }
+                else if (this.Name.Contains(" Svetloozerskiy"))
+                {
+                    return PlayerType.BossFollower;
+                }
+                else if (this.Name.Contains("Sektant") || this.Name.Contains("Zhrets"))
+                {
+                    return PlayerType.Cultist;
+                }
                 else
                 {
                     var inFaction = Program.AIFactionManager.IsInFaction(this.Name, out var playerType);
@@ -556,6 +568,18 @@ namespace eft_dma_radar
                 if (this.Name.Contains("(BTR)"))
                 {
                     return PlayerType.Boss;
+                }
+                else if (this.Name.Contains(" Zavodskoy"))
+                {
+                    return PlayerType.BossFollower;
+                }
+                else if (this.Name.Contains(" Svetloozerskiy"))
+                {
+                    return PlayerType.BossFollower;
+                }
+                else if (this.Name.Contains("Sektant") || this.Name.Contains("Zhrets"))
+                {
+                    return PlayerType.Cultist;
                 }
                 else if (this.PlayerRole == 49 || this.PlayerRole == 50)
                 {
