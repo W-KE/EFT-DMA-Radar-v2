@@ -1,16 +1,19 @@
 ﻿using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Numerics;
+using System.Collections.Concurrent;
 using SkiaSharp;
 using SkiaSharp.Views.Desktop;
 using MaterialSkin;
 using MaterialSkin.Controls;
 using eft_dma_radar.Properties;
+using eft_dma_radar.Source;
 
 namespace eft_dma_radar
 {
     public partial class frmMain : MaterialForm
     {
+        private WebSocketServer _webSocketServer;
         private readonly Config _config;
         private readonly Watchlist _watchlist;
         private readonly LootFilterManager _lootFilterManager;
@@ -202,15 +205,33 @@ namespace eft_dma_radar
             panTimer = new System.Windows.Forms.Timer();
             panTimer.Interval = PAN_INTERVAL;
             panTimer.Tick += PanTimer_Tick;
+            
+            StartWebSocketServer();
         }
         #endregion
 
+        #region WebSocketServer
+
+        private void StartWebSocketServer()
+        {
+            _webSocketServer = new WebSocketServer("0.0.0.0", 56789);
+            _webSocketServer.Start();
+        }
+        
+        private void StopWebSocketServer()
+        {
+            _webSocketServer.Stop();
+        }
+
+        #endregion
+        
         #region Overrides
         /// <summary>
         /// Form closing event.
         /// </summary>
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
+            StopWebSocketServer();
             e.Cancel = true; // Cancel shutdown
             this.Enabled = false; // Lock window
             Memory.Loot?.StopAutoRefresh();
