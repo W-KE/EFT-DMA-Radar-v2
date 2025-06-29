@@ -18,13 +18,13 @@ namespace eft_dma_radar
 {
     public partial class frmMain : MaterialForm
     {
-        private WebSocketServer _webSocketServer;
+        private WebSocketServer webSocketServer;
         private readonly Config config;
         private readonly Watchlist watchlist;
         private readonly LootFilterManager lootFilterManager;
         private readonly AIFactionManager aiFactions;
         private readonly SKGLControl mapCanvas;
-        private readonly SKGLControl _aimCanvas;
+        private readonly SKGLControl aimCanvas;
         private readonly Stopwatch fpsWatch = new();
         private readonly object renderLock = new();
         private readonly object loadMapBitmapsLock = new();
@@ -251,6 +251,9 @@ namespace eft_dma_radar
 
             this.mapCanvas = skMapCanvas;
             this.mapCanvas.VSync = this.config.VSync;
+            
+            this.aimCanvas = skMapCanvas;
+            this.aimCanvas.VSync = this.config.VSync;
 
             this.mapChangeTimer.AutoReset = false;
             this.mapChangeTimer.Elapsed += this.MapChangeTimer_Elapsed;
@@ -268,13 +271,13 @@ namespace eft_dma_radar
 
         private void StartWebSocketServer()
         {
-            _webSocketServer = new WebSocketServer("0.0.0.0", 56789);
-            _webSocketServer.Start();
+            this.webSocketServer = new WebSocketServer("0.0.0.0", 56789);
+            this.webSocketServer.Start();
         }
         
         private void StopWebSocketServer()
         {
-            _webSocketServer.Stop();
+            this.webSocketServer.Stop();
         }
 
         #endregion
@@ -1387,10 +1390,10 @@ namespace eft_dma_radar
 
             var mapCanvasBounds = new SKRect() // Drawing Destination
             {
-                Left = this.mapCanvas.Left,
-                Right = this.mapCanvas.Right,
-                Top = this.mapCanvas.Top,
-                Bottom = this.mapCanvas.Bottom
+                Left = 0,
+                Right = this.mapCanvas.Width,
+                Top = 0,
+                Bottom = this.mapCanvas.Height
             };
 
             // Draw Game Map
@@ -1454,7 +1457,7 @@ namespace eft_dma_radar
                             }
                         }
 
-                        this.DrawPlayer(canvas, player, playerZoomedPos, aimlineLength, mouseOverGroup, localPlayerMapPos);
+                        this.DrawRadarPlayer(canvas, player, playerZoomedPos, aimlineLength, mouseOverGroup, localPlayerMapPos);
                     }
                 }
             }
@@ -2164,8 +2167,8 @@ namespace eft_dma_radar
             if (this.IsInFOV(drawX, drawY, drawingLocation) && dist < 250)
             {
                 float circleSize = this.CalculateCircleSize(dist);
-                float boxWidth = circleSize * _uiScale * 3;
-                float boxHeight = circleSize * _uiScale * 7;
+                float boxWidth = circleSize * this.uiScale * 3;
+                float boxHeight = circleSize * this.uiScale * 7;
                 //canvas.DrawCircle(enemyCanvasX, enemyCanvasY, circleSize * _uiScale * 5.0f, player.GetAimviewPaint());
                 //canvas.DrawText("(" + enemyPosition.X.ToString("0") + ":" + enemyPosition.Z.ToString("0") + ")(" + enemyCanvasX.ToString("0") + ":" + enemyCanvasY.ToString("0") + ")" + dist.ToString("0") + enemyQuadrant, drawX, drawY - 20, SKPaints.TextAimViewDistance);
                 canvas.DrawRect(drawX - boxWidth / 2, drawY, boxWidth, boxHeight, player.GetAimviewPaint());
@@ -2243,7 +2246,7 @@ namespace eft_dma_radar
 
             // Calculate the projection matrix
             float fov = 65.0f; // Field of view (vertical)
-            float aspect = _aimCanvas.Width / _aimCanvas.Height; // Aspect ratio (width/height)
+            float aspect = this.aimCanvas.Width / this.aimCanvas.Height; // Aspect ratio (width/height)
             float near = 0.1f; // Near clipping plane
             float far = 1000.0f; // Far clipping plane
             Matrix4x4 projectionMatrix = CalculateProjectionMatrix(fov, aspect, near, far);
@@ -3044,8 +3047,8 @@ namespace eft_dma_radar
 
             if (this.mapCanvas is not null)
                 this.mapCanvas.VSync = enabled;
-            if (_aimCanvas is not null)
-                _aimCanvas.VSync = enabled;
+            if (this.aimCanvas is not null)
+                this.aimCanvas.VSync = enabled;
         }
 
         private void swPvEMode_CheckedChanged(object sender, EventArgs e)

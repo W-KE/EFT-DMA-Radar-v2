@@ -333,7 +333,7 @@ public class WebSocketServer
                     Z = pair.Value.Position.Z,
                     Direction = pair.Value.Rotation.X,
                     Pitch = pair.Value.Rotation.Y,
-                    Gear = pair.Value.Gear.ToDictionary(x => x.Key, x => x.Value.Short)
+                    Gear = pair.Value.Gear.ToDictionary(x => x.Slot.Key, x => x.Item.Short)
                 }).ToList();
 
                 string jsonString =
