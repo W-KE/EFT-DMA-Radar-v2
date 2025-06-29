@@ -78,36 +78,36 @@
     public struct Player // EFT.Player : MonoBehaviour, 
     {
         public static readonly uint[] To_TransformInternal = new uint[] { PlayerBody, 0x28, 0x28, 0x10, 0x20 + (0 * 0x8), 0x10 }; // to TransformInternal
-        public const uint MovementContext = 0x50; // [50] <MovementContext>k__BackingField : EFT.MovementContext
-        public const uint Corpse = 0x420; // [420] Corpse : EFT.Interactive.Corpse
-        public const uint Profile = 0x648; // [648] <Profile>k__BackingField : EFT.Profile
-        public const uint InventoryController = 0x6A0; // [6A0] _inventoryController : -.Player.PlayerInventoryController
-        public const uint PlayerBody = 0xB8; // [B8] _playerBody : EFT.PlayerBody
-        public const uint Location = 0x610; // [610] <Location>k__BackingField : String
-        public const uint Physical = 0x658; // [658] Physical : -.GClass
-        public const uint ProceduralWeaponAnimation = 0x1D8; // [1D8] <ProceduralWeaponAnimation>k__BackingField : EFT.Animations.ProceduralWeaponAnimation
-        public const uint HandsController = 0x6A8; // [6A8] _handsController : -.Player.AbstractHandsController
+        public const uint MovementContext = 0x58; // [58] <MovementContext>k__BackingField : EFT.MovementContext
+        public const uint Corpse = 0x3E0; // [3E0] Corpse : EFT.Interactive.Corpse
+        public const uint Profile = 0x610; // [610] <Profile>k__BackingField : EFT.Profile
+        public const uint InventoryController = 0x668; // [668] _inventoryController : -.Player.PlayerInventoryController
+        public const uint PlayerBody = 0xC0; // [C0] _playerBody : EFT.PlayerBody
+        public const uint Location = 0x5D8; // [5D8] <Location>k__BackingField : String
+        public const uint Physical = 0x620; // [620] Physical : -.GClass
+        public const uint ProceduralWeaponAnimation = 0x1E0; // [1E0] <ProceduralWeaponAnimation>k__BackingField : EFT.Animations.ProceduralWeaponAnimation
+        public const uint HandsController = 0x670; // [670] _handsController : -.Player.AbstractHandsController
     }
 
     public struct Profile // EFT.Profile
     {
         public const uint Id = 0x10; // [10] Id : String
         public const uint AccountId = 0x18; // [18] AccountId : String
-        public const uint PlayerInfo = 0x28; // [28] Info : -.GClass17BE
-        public const uint SkillManager = 0x58; // [58] Skills : EFT.SkillManager
-        public const uint QuestsData = 0x70; // [70] QuestsData : System.Collections.Generic.List<GClass342B>
+        public const uint PlayerInfo = 0x40; // [40] Info : -.GClass19F9
+        public const uint SkillManager = 0x70; // [70] Skills : EFT.SkillManager
+        public const uint QuestsData = 0x88; // [88] QuestsData : System.Collections.Generic.List<GClass389D>
     }
 
     public struct ObservedPlayerView // [Class] EFT.NextObservedPlayer.ObservedPlayerView : MonoBehaviour
     {
-        public const uint GroupID = 0x18; // [18] string_0x18 : String
-        public const uint ID = 0x40; // [40] string_0x40 : String
-        public const uint NickName = 0x48; // [48] string_0x48 : String
-        public const uint AccountID = 0x50; // [50] string_0x50 : String
-        public const uint PlayerBody = 0x60; // [60] playerBody_0x60 : EFT.PlayerBody
-        public const uint ObservedPlayerController = 0x80; // [80] gClass22BE_0x80 : -.GClass22BE
-        public const uint PlayerSide = 0xF8; // [F8] int32_0xF8 : System.Int32
-        public const uint IsAI = 0x108; // [108] boolean_0x108 : Boolean
+        public const uint GroupID = 0x20; // [20] string_0x20 : String
+        public const uint ID = 0x48; // [48] string_0x48 : String
+        public const uint NickName = 0x50; // [50] string_0x50 : String
+        public const uint AccountID = 0x58; // [58] string_0x58 : String
+        public const uint PlayerBody = 0x68; // [68] playerBody_0x68 : EFT.PlayerBody
+        public const uint ObservedPlayerController = 0x88; // [88] gClass257A_0x88 : -.GClass257A
+        public const uint PlayerSide = 0x100; // [100] int32_0x100 : System.Int32
+        public const uint IsAI = 0x110; // [110] boolean_0x110 : Boolean
         public static readonly uint[] To_MovementContext = new uint[] { ObservedPlayerController, 0xC8, 0x10 }; // to MovementContext
         public static readonly uint[] To_TransformInternal = new uint[] { PlayerBody, 0x28, 0x28, 0x10, 0x20, 0x10 }; // to TransformInternal
         public static readonly uint[] To_InventoryController = new uint[] { ObservedPlayerController, 0x118 }; // to InventoryController
